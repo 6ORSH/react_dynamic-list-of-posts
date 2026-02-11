@@ -14,6 +14,7 @@ export const NewCommentForm: React.FC<Props> = ({ postId, onAddComment }) => {
   );
   const [touched, setTouched] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const validate = (values: typeof form) => {
     const newErrors: { [key: string]: string } = {};
@@ -42,6 +43,10 @@ export const NewCommentForm: React.FC<Props> = ({ postId, onAddComment }) => {
 
     setForm(f => ({ ...f, [name]: value }));
     setErrors(errs => (touched ? { ...errs, [name]: undefined } : errs));
+
+    if (submitError) {
+      setSubmitError(null);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -64,6 +69,8 @@ export const NewCommentForm: React.FC<Props> = ({ postId, onAddComment }) => {
       onAddComment(newComment);
       setForm(f => ({ ...f, body: '' }));
       setErrors({});
+    } catch (error) {
+      setSubmitError('Failed to submit comment. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -73,6 +80,7 @@ export const NewCommentForm: React.FC<Props> = ({ postId, onAddComment }) => {
     setForm(f => ({ ...f, body: '' }));
     setErrors({});
     setTouched(false);
+    setSubmitError(null);
   };
 
   return (
@@ -169,6 +177,15 @@ export const NewCommentForm: React.FC<Props> = ({ postId, onAddComment }) => {
           </p>
         )}
       </div>
+
+      {submitError && (
+        <div
+          className="notification is-danger is-light"
+          style={{ marginBottom: '1rem', padding: '0.5rem' }}
+        >
+          {submitError}
+        </div>
+      )}
 
       <div className="field is-grouped">
         <div className="control">

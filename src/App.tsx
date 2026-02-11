@@ -13,52 +13,82 @@ import { UserSelector } from './components/UserSelector';
 import { Post } from './types/Post';
 import { User } from './types/User';
 
+interface AppState {
+  selectedUser: User | null;
+  selectedPost: Post | null;
+  isLoadingPosts: boolean;
+  postsError: boolean;
+}
+
 export const App = () => {
   const [users, setUsers] = useState<User[]>([]);
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [isFetchPostsError, setIsFetchPostsError] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [posts, setPosts] = useState<Post[]>([]);
-  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+  const [ui, setUi] = useState<AppState>({
+    selectedUser: null,
+    selectedPost: null,
+    isLoadingPosts: false,
+    postsError: false,
+  });
 
-  const getUsers = () => {
-    getUsersRequest().then((fetchedUsers: User[]) => {
+  const getUsers = async () => {
+    try {
+      const fetchedUsers = await getUsersRequest();
+
       setUsers(fetchedUsers);
-    });
+    } catch {
+      setUsers([]);
+    }
   };
 
   useEffect(() => {
     getUsers();
   }, []);
 
+  const updateUi = useCallback((newState: Partial<AppState>) => {
+    setUi(prev => ({
+      ...prev,
+      ...newState,
+    }));
+  }, []);
+
   const getUserPosts = useCallback(
-    (userId: number): void => {
-      setIsLoading(true);
-      getUserPostsRequest(userId)
-        .then((fetchedPosts: Post[]) => {
-          setPosts(fetchedPosts);
-        })
-        .catch(() => {
-          setIsFetchPostsError(true);
-        })
-        .finally(() => {
-          setIsLoading(false);
+    async (userId: number): Promise<void> => {
+      updateUi({
+        postsError: false,
+        isLoadingPosts: true,
+      });
+
+      try {
+        const fetchedPosts = await getUserPostsRequest(userId);
+
+        setPosts(fetchedPosts);
+      } catch {
+        updateUi({
+          postsError: true,
         });
+        setPosts([]);
+      } finally {
+        updateUi({
+          isLoadingPosts: false,
+        });
+      }
     },
-    [setPosts, setIsLoading, setIsFetchPostsError],
+    [setPosts, updateUi],
   );
 
   const openUserPosts = useCallback(
-    (user: User) => {
-      if (user.id === selectedUser?.id) {
+    async (user: User) => {
+      if (user.id === ui.selectedUser?.id) {
         return;
       }
 
-      setSelectedUser(user);
-      setSelectedPost(null);
-      getUserPosts(user.id);
+      updateUi({
+        selectedUser: user,
+        selectedPost: null,
+      });
+      await getUserPosts(user.id);
     },
-    [selectedUser, getUserPosts],
+    [ui.selectedUser, getUserPosts, updateUi],
   );
 
   return (
@@ -71,15 +101,15 @@ export const App = () => {
                 <UserSelector
                   users={users}
                   onUserSelect={openUserPosts}
-                  selectedUser={selectedUser}
+                  selectedUser={ui.selectedUser}
                 />
               </div>
 
               <div className="block" data-cy="MainContent">
-                {selectedUser ? (
-                  isLoading ? (
+                {ui.selectedUser ? (
+                  ui.isLoadingPosts ? (
                     <Loader />
-                  ) : isFetchPostsError ? (
+                  ) : ui.postsError ? (
                     <div
                       className="notification is-danger"
                       data-cy="PostsLoadingError"
@@ -89,8 +119,8 @@ export const App = () => {
                   ) : posts.length > 0 ? (
                     <PostsList
                       posts={posts}
-                      onPostSelect={setSelectedPost}
-                      selectedPost={selectedPost}
+                      onPostSelect={post => updateUi({ selectedPost: post })}
+                      selectedPost={ui.selectedPost}
                     />
                   ) : (
                     <div
@@ -114,13 +144,13 @@ export const App = () => {
               'is-8-desktop',
               'Sidebar',
               {
-                'Sidebar--open': selectedPost,
+                'Sidebar--open': ui.selectedPost,
               },
             )}
           >
-            {selectedPost && (
+            {ui.selectedPost && (
               <div className="tile is-child box is-success ">
-                <PostDetails post={selectedPost} />
+                <PostDetails post={ui.selectedPost} />
               </div>
             )}
           </div>

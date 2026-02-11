@@ -1,5 +1,5 @@
 import classNames from 'classnames';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { User } from '../types/User';
 
 type Props = {
@@ -24,25 +24,6 @@ export const UserSelector: React.FC<Props> = ({
     onUserSelect(user);
   };
 
-  useEffect(() => {
-    if (!isActive) {
-      return;
-    }
-
-    const handleOutsideClick = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
-        setIsActive(false);
-      }
-    };
-
-    document.addEventListener('click', handleOutsideClick);
-
-    return () => document.removeEventListener('click', handleOutsideClick);
-  }, [isActive]);
-
   return (
     <div
       data-cy="UserSelector"
@@ -50,6 +31,7 @@ export const UserSelector: React.FC<Props> = ({
       className={classNames('dropdown', {
         'is-active': isActive,
       })}
+      tabIndex={-1}
     >
       <div className="dropdown-trigger">
         <button
@@ -57,15 +39,27 @@ export const UserSelector: React.FC<Props> = ({
           className="button"
           aria-haspopup="true"
           aria-controls="dropdown-menu"
-          onClick={() => handleToggleSelect()}
+          onClick={handleToggleSelect}
         >
           <span>{selectedUser ? selectedUser.name : 'Choose a user'}</span>
-
           <span className="icon is-small">
             <i className="fas fa-angle-down" aria-hidden="true" />
           </span>
         </button>
       </div>
+
+      {isActive && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 10,
+            background: 'transparent',
+          }}
+          onClick={() => setIsActive(false)}
+          aria-label="Close dropdown overlay"
+        />
+      )}
 
       <div className="dropdown-menu" id="dropdown-menu" role="menu">
         <div className="dropdown-content">

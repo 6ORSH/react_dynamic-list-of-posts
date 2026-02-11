@@ -9,70 +9,137 @@ type Props = {
   post: Post;
 };
 
+interface CommentsState {
+  isLoading: boolean;
+  isCommentsLoadingError: boolean;
+  isCommentDeleteError: boolean;
+  comments: Comment[];
+  isFormOpened: boolean;
+}
+
 export const PostDetails: React.FC<Props> = ({ post }) => {
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [isFetchCommentsError, setIsFetchCommentsError] =
-    useState<boolean>(false);
-  const [comments, setComments] = useState<Comment[]>([]);
-  const [isNewCommentFormOpened, setIsNewCommentFormOpened] =
-    useState<boolean>(false);
+  const [commentsState, setCommentsState] = useState<CommentsState>({
+    isLoading: false,
+    isCommentsLoadingError: false,
+    isCommentDeleteError: false,
+    comments: [],
+    isFormOpened: false,
+  });
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [lastRemoved, setLastRemoved] = useState<{
+    comment: Comment | null;
+    index: number | null;
+  }>({ comment: null, index: null });
+
+  const updateCommentsState = (newState: Partial<CommentsState>) => {
+    setCommentsState(prev => ({
+      ...prev,
+      ...newState,
+    }));
+  };
 
   useEffect(() => {
-    setIsNewCommentFormOpened(false);
+    const fetchComments = async () => {
+      updateCommentsState({ isFormOpened: false });
 
-    if (!post) {
-      return;
-    }
+      if (!post) {
+        return;
+      }
 
-    setIsLoading(true);
+      updateCommentsState({ isLoading: true, isCommentsLoadingError: false });
 
-    getPostCommentsRequest(post.id)
-      .then((fetchedComments: Comment[]) => {
-        setComments(fetchedComments);
-      })
-      .catch(() => {
-        setIsFetchCommentsError(true);
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
+      try {
+        const fetchedComments = await getPostCommentsRequest(post.id);
+
+        updateCommentsState({ comments: fetchedComments });
+      } catch (error) {
+        updateCommentsState({ isCommentsLoadingError: true });
+        updateCommentsState({ comments: [] });
+      } finally {
+        updateCommentsState({ isLoading: false });
+      }
+    };
+
+    fetchComments();
   }, [post]);
 
   const handleWriteComment = () => {
-    setIsNewCommentFormOpened(true);
+    updateCommentsState({ isFormOpened: true });
   };
 
-  const handleDeleteComment = (commentId: number) => {
-    deleteCommentRequest(commentId)
-      .then(() => {
-        setComments(prev => prev.filter(comment => comment.id !== commentId));
-      })
-      .catch(() => {
-        setIsFetchCommentsError(true);
+  const handleDeleteComment = async (commentId: number) => {
+    setDeleteError(null);
+    setCommentsState(previousState => {
+      const commentToRemove: Comment | undefined = previousState.comments.find(
+        (comment: Comment) => comment.id === commentId,
+      );
+      const index = previousState.comments.findIndex(
+        (comment: Comment) => comment.id === commentId,
+      );
+
+      if (!commentToRemove || index < 0) {
+        return previousState;
+      }
+
+      setLastRemoved({ comment: commentToRemove, index });
+
+      return {
+        ...previousState,
+        comments: previousState.comments.filter(
+          comment => comment.id !== commentId,
+        ),
+      };
+    });
+
+    try {
+      await deleteCommentRequest(commentId);
+      setLastRemoved({ comment: null, index: null });
+    } catch (error) {
+      setCommentsState(previousState => {
+        if (!lastRemoved.comment || lastRemoved.index === null) {
+          return previousState;
+        }
+
+        const next = [...previousState.comments];
+
+        next.splice(lastRemoved.index, 0, lastRemoved.comment);
+
+        return { ...previousState, comments: next };
       });
+      setDeleteError('Failed to delete comment. Please try again.');
+      setLastRemoved({ comment: null, index: null });
+    }
   };
 
   return (
     <div className="content" data-cy="PostDetails">
       <div className="content" data-cy="PostDetails">
         <div className="block">
+          {deleteError && (
+            <div
+              className="notification is-danger is-light"
+              style={{ marginBottom: '1rem', padding: '0.5rem' }}
+            >
+              {deleteError}
+            </div>
+          )}
           <h2 data-cy="PostTitle">{`#${post.id}: ${post.title}`}</h2>
 
           <p data-cy="PostBody">{post.body}</p>
         </div>
 
         <div className="block">
-          {isLoading ? (
+          {commentsState.isLoading ? (
             <Loader />
-          ) : isFetchCommentsError ? (
+          ) : commentsState.isCommentsLoadingError ? (
             <div className="notification is-danger" data-cy="CommentsError">
               Something went wrong
             </div>
-          ) : comments.length > 0 ? (
+          ) : commentsState.comments.length > 0 ? (
             <>
               <p className="title is-4">Comments:</p>
 
-              {comments.map((comment: Comment) => {
+              {commentsState.comments.map((comment: Comment) => {
                 return (
                   <article
                     key={comment.id}
@@ -110,22 +177,29 @@ export const PostDetails: React.FC<Props> = ({ post }) => {
             </p>
           )}
 
-          {!isNewCommentFormOpened && !isLoading && !isFetchCommentsError && (
-            <button
-              data-cy="WriteCommentButton"
-              type="button"
-              className="button is-link"
-              onClick={() => handleWriteComment()}
-            >
-              Write a comment
-            </button>
-          )}
+          {!commentsState.isFormOpened &&
+            !commentsState.isLoading &&
+            !commentsState.isCommentsLoadingError && (
+              <button
+                data-cy="WriteCommentButton"
+                type="button"
+                className="button is-link"
+                onClick={() => handleWriteComment()}
+              >
+                Write a comment
+              </button>
+            )}
         </div>
 
-        {isNewCommentFormOpened && (
+        {commentsState.isFormOpened && (
           <NewCommentForm
             postId={post.id}
-            onAddComment={comment => setComments(prev => [...prev, comment])}
+            onAddComment={comment =>
+              setCommentsState(prev => ({
+                ...prev,
+                comments: [...prev.comments, comment],
+              }))
+            }
           />
         )}
       </div>
