@@ -1,6 +1,6 @@
 import { Post } from '../types/Post';
 import { client } from '../utils/fetchClient';
 
-export function getUserPostsRequest(userId: number) {
+export const getUserPostsFromServer = (userId: number): Promise<Post[]> => {
   return client.get<Post[]>('/posts?userId=' + userId);
-}
+};

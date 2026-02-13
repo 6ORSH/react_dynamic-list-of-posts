@@ -1,5 +1,9 @@
+import PropTypes from 'prop-types';
 import React, { useEffect, useState } from 'react';
-import { deleteCommentRequest, getPostCommentsRequest } from '../api/comments';
+import {
+  deleteCommentFromServer,
+  getPostCommentsFromServer,
+} from '../api/comments';
 import { Comment } from '../types/Comment';
 import { Post, POST_PROP_TYPES } from '../types/Post';
 import { Loader } from './Loader';
@@ -16,8 +20,6 @@ interface CommentsState {
   comments: Comment[];
   isFormOpened: boolean;
 }
-
-import PropTypes from 'prop-types';
 
 export const PostDetails: React.FC<Props> = ({ post }) => {
   const [commentsState, setCommentsState] = useState<CommentsState>({
@@ -47,7 +49,7 @@ export const PostDetails: React.FC<Props> = ({ post }) => {
       updateCommentsState({ isLoading: true, isCommentsLoadingError: false });
 
       try {
-        const fetchedComments = await getPostCommentsRequest(post.id);
+        const fetchedComments = await getPostCommentsFromServer(post.id);
 
         updateCommentsState({ comments: fetchedComments });
       } catch (error) {
@@ -99,7 +101,7 @@ export const PostDetails: React.FC<Props> = ({ post }) => {
     });
 
     try {
-      await deleteCommentRequest(commentId);
+      await deleteCommentFromServer(commentId);
     } catch (error) {
       setCommentsState(previousState => {
         if (!lastRemoved.comment || lastRemoved.index === null) {

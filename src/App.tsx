@@ -4,8 +4,8 @@ import './App.scss';
 
 import classNames from 'classnames';
 import { useCallback, useEffect, useState } from 'react';
-import { getUserPostsRequest } from './api/posts';
-import { getUsersRequest } from './api/users';
+import { getUserPostsFromServer } from './api/posts';
+import { getUsersFromServer } from './api/users';
 import { Loader } from './components/Loader';
 import { PostDetails } from './components/PostDetails';
 import { PostsList } from './components/PostsList';
@@ -29,10 +29,16 @@ export const App = () => {
     isLoadingPosts: false,
     postsError: false,
   });
+  const updateUi = useCallback((newState: Partial<AppState>) => {
+    setUi(prev => ({
+      ...prev,
+      ...newState,
+    }));
+  }, []);
 
   const getUsers = async () => {
     try {
-      const fetchedUsers = await getUsersRequest();
+      const fetchedUsers = await getUsersFromServer();
 
       setUsers(fetchedUsers);
     } catch {
@@ -44,48 +50,31 @@ export const App = () => {
     getUsers();
   }, []);
 
-  const updateUi = useCallback((newState: Partial<AppState>) => {
-    setUi(prev => ({
-      ...prev,
-      ...newState,
-    }));
-  }, []);
+  async function selectUser(user: User) {
+    if (!user) {
+      return;
+    }
 
-  const getUserPosts = useCallback(
-    async (userId: number): Promise<void> => {
+    updateUi({
+      selectedUser: user,
+      selectedPost: null,
+      postsError: false,
+      isLoadingPosts: true,
+    });
+
+    try {
+      const fetchedPosts = await getUserPostsFromServer(user.id);
+      setPosts(fetchedPosts);
+    } catch {
       updateUi({
-        postsError: false,
-        isLoadingPosts: true,
+        postsError: true,
       });
-
-      try {
-        const fetchedPosts = await getUserPostsRequest(userId);
-
-        setPosts(fetchedPosts);
-      } catch {
-        updateUi({
-          postsError: true,
-        });
-        setPosts([]);
-      } finally {
-        updateUi({
-          isLoadingPosts: false,
-        });
-      }
-    },
-    [setPosts, updateUi],
-  );
-
-  const openUserPosts = useCallback(
-    async (user: User) => {
+    } finally {
       updateUi({
-        selectedUser: user,
-        selectedPost: null,
+        isLoadingPosts: false,
       });
-      await getUserPosts(user.id);
-    },
-    [ui.selectedUser, getUserPosts, updateUi],
-  );
+    }
+  }
 
   return (
     <main className="section">
@@ -96,7 +85,7 @@ export const App = () => {
               <div className="block">
                 <UserSelector
                   users={users}
-                  onUserSelect={openUserPosts}
+                  onUserSelect={selectUser}
                   selectedUser={ui.selectedUser}
                 />
               </div>

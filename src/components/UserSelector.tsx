@@ -20,12 +20,14 @@ export const UserSelector: React.FC<Props> = ({
     setIsActive(!isActive);
   };
 
-  const handleSelect = (user: User) => {
+  const handleSelect = (event: React.MouseEvent, user: User) => {
+    event.preventDefault();
     setIsActive(false);
 
     if (!user || user.id === selectedUser?.id) {
       return;
     }
+
     onUserSelect(user);
   };
 
@@ -68,27 +70,18 @@ export const UserSelector: React.FC<Props> = ({
 
       <div className="dropdown-menu" id="dropdown-menu" role="menu">
         <div className="dropdown-content">
-          {users.map((user: User) => {
-            return (
-              <button
-                type="button"
-                key={user.id}
-                className={classNames('dropdown-item', {
-                  'is-active': selectedUser?.id === user.id,
-                })}
-                onClick={() => handleSelect(user)}
-                style={{
-                  width: '100%',
-                  textAlign: 'left',
-                  background: 'none',
-                  border: 'none',
-                  padding: 0,
-                }}
-              >
-                {user.name}
-              </button>
-            );
-          })}
+          {users.map(user => (
+            <a
+              href={`#user-${user.id}`}
+              key={user.id}
+              className={classNames('dropdown-item', {
+                'is-active': selectedUser?.name === user.name,
+              })}
+              onClick={event => handleSelect(event, user)}
+            >
+              {user.name}
+            </a>
+          ))}
         </div>
       </div>
     </div>
