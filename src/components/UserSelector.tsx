@@ -1,6 +1,7 @@
 import classNames from 'classnames';
+import PropTypes from 'prop-types';
 import React, { useRef, useState } from 'react';
-import { User } from '../types/User';
+import { User, USER_PROP_TYPES } from '../types/User';
 
 type Props = {
   users: User[];
@@ -19,7 +20,11 @@ export const UserSelector: React.FC<Props> = ({
     setIsActive(!isActive);
   };
 
-  const handleSelect = (user: User) => {
+  const handleSelect = (
+    e: React.MouseEvent<HTMLAnchorElement, MouseEvent>,
+    user: User,
+  ) => {
+    e.preventDefault();
     setIsActive(false);
     onUserSelect(user);
   };
@@ -71,7 +76,7 @@ export const UserSelector: React.FC<Props> = ({
                 className={classNames('dropdown-item', {
                   'is-active': selectedUser?.id === user.id,
                 })}
-                onClick={() => handleSelect(user)}
+                onClick={e => handleSelect(e, user)}
               >
                 {user.name}
               </a>
@@ -81,4 +86,15 @@ export const UserSelector: React.FC<Props> = ({
       </div>
     </div>
   );
+};
+
+// Runtime propTypes for checklist compliance
+UserSelector.propTypes = {
+  users: PropTypes.arrayOf(PropTypes.shape(USER_PROP_TYPES).isRequired)
+    .isRequired,
+  onUserSelect: PropTypes.func.isRequired,
+  selectedUser: PropTypes.oneOfType([
+    PropTypes.shape(USER_PROP_TYPES),
+    PropTypes.oneOf([null]),
+  ]),
 };

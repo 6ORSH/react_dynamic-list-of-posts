@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { deleteCommentRequest, getPostCommentsRequest } from '../api/comments';
 import { Comment } from '../types/Comment';
-import { Post } from '../types/Post';
+import { Post, POST_PROP_TYPES } from '../types/Post';
 import { Loader } from './Loader';
 import { NewCommentForm } from './NewCommentForm';
 
@@ -17,6 +17,8 @@ interface CommentsState {
   isFormOpened: boolean;
 }
 
+import PropTypes from 'prop-types';
+
 export const PostDetails: React.FC<Props> = ({ post }) => {
   const [commentsState, setCommentsState] = useState<CommentsState>({
     isLoading: false,
@@ -26,10 +28,6 @@ export const PostDetails: React.FC<Props> = ({ post }) => {
     isFormOpened: false,
   });
   const [deleteError, setDeleteError] = useState<string | null>(null);
-  const [lastRemoved, setLastRemoved] = useState<{
-    comment: Comment | null;
-    index: number | null;
-  }>({ comment: null, index: null });
 
   const updateCommentsState = (newState: Partial<CommentsState>) => {
     setCommentsState(prev => ({
@@ -68,6 +66,14 @@ export const PostDetails: React.FC<Props> = ({ post }) => {
   };
 
   const handleDeleteComment = async (commentId: number) => {
+    const lastRemoved: {
+      comment: Comment | null;
+      index: number | null;
+    } = {
+      comment: null,
+      index: null,
+    };
+
     setDeleteError(null);
     setCommentsState(previousState => {
       const commentToRemove: Comment | undefined = previousState.comments.find(
@@ -81,7 +87,8 @@ export const PostDetails: React.FC<Props> = ({ post }) => {
         return previousState;
       }
 
-      setLastRemoved({ comment: commentToRemove, index });
+      lastRemoved.comment = commentToRemove;
+      lastRemoved.index = index;
 
       return {
         ...previousState,
@@ -93,7 +100,6 @@ export const PostDetails: React.FC<Props> = ({ post }) => {
 
     try {
       await deleteCommentRequest(commentId);
-      setLastRemoved({ comment: null, index: null });
     } catch (error) {
       setCommentsState(previousState => {
         if (!lastRemoved.comment || lastRemoved.index === null) {
@@ -107,7 +113,6 @@ export const PostDetails: React.FC<Props> = ({ post }) => {
         return { ...previousState, comments: next };
       });
       setDeleteError('Failed to delete comment. Please try again.');
-      setLastRemoved({ comment: null, index: null });
     }
   };
 
@@ -205,4 +210,9 @@ export const PostDetails: React.FC<Props> = ({ post }) => {
       </div>
     </div>
   );
+};
+
+// Runtime propTypes for checklist compliance
+PostDetails.propTypes = {
+  post: PropTypes.shape(POST_PROP_TYPES).isRequired,
 };
