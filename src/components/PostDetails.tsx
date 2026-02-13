@@ -116,6 +116,19 @@ export const PostDetails: React.FC<Props> = ({ post }) => {
     }
   };
 
+  const WriteCommentButton = ({ onClick }: { onClick: () => void }) => (
+    <>
+      <button
+        data-cy="WriteCommentButton"
+        type="button"
+        className="button is-link"
+        onClick={onClick}
+      >
+        Write a comment
+      </button>
+    </>
+  );
+
   return (
     <div className="content" data-cy="PostDetails">
       <div className="content" data-cy="PostDetails">
@@ -182,18 +195,11 @@ export const PostDetails: React.FC<Props> = ({ post }) => {
             </p>
           )}
 
-          {!commentsState.isFormOpened &&
-            !commentsState.isLoading &&
-            !commentsState.isCommentsLoadingError && (
-            <button
-              data-cy="WriteCommentButton"
-              type="button"
-              className="button is-link"
-              onClick={() => handleWriteComment()}
-            >
-                Write a comment
-            </button>
-          )}
+          {!(
+            commentsState.isFormOpened ||
+            commentsState.isLoading ||
+            commentsState.isCommentsLoadingError
+          ) && <WriteCommentButton onClick={handleWriteComment} />}
         </div>
 
         {commentsState.isFormOpened && (
