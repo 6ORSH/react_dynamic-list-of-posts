@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import {
   deleteCommentFromServer,
   getPostCommentsFromServer,
-} from '../api/comments';
+} from '../api/commentApi';
 import { Comment } from '../types/Comment';
 import { Post, POST_PROP_TYPES } from '../types/Post';
 import { Loader } from './Loader';

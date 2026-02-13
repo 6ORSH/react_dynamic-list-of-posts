@@ -4,8 +4,8 @@ import './App.scss';
 
 import classNames from 'classnames';
 import { useCallback, useEffect, useState } from 'react';
-import { getUserPostsFromServer } from './api/posts';
-import { getUsersFromServer } from './api/users';
+import { getUserPostsFromServer } from './api/postApi';
+import { getUsersFromServer } from './api/userApi';
 import { Loader } from './components/Loader';
 import { PostDetails } from './components/PostDetails';
 import { PostsList } from './components/PostsList';
@@ -64,6 +64,7 @@ export const App = () => {
 
     try {
       const fetchedPosts = await getUserPostsFromServer(user.id);
+
       setPosts(fetchedPosts);
     } catch {
       updateUi({
