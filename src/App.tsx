@@ -78,10 +78,6 @@ export const App = () => {
 
   const openUserPosts = useCallback(
     async (user: User) => {
-      if (user.id === ui.selectedUser?.id) {
-        return;
-      }
-
       updateUi({
         selectedUser: user,
         selectedPost: null,

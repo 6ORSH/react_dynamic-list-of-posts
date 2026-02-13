@@ -22,6 +22,10 @@ export const UserSelector: React.FC<Props> = ({
 
   const handleSelect = (user: User) => {
     setIsActive(false);
+
+    if (!user || user.id === selectedUser?.id) {
+      return;
+    }
     onUserSelect(user);
   };
 
