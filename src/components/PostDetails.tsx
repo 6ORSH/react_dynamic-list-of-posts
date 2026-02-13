@@ -185,15 +185,15 @@ export const PostDetails: React.FC<Props> = ({ post }) => {
           {!commentsState.isFormOpened &&
             !commentsState.isLoading &&
             !commentsState.isCommentsLoadingError && (
-              <button
-                data-cy="WriteCommentButton"
-                type="button"
-                className="button is-link"
-                onClick={() => handleWriteComment()}
-              >
+            <button
+              data-cy="WriteCommentButton"
+              type="button"
+              className="button is-link"
+              onClick={() => handleWriteComment()}
+            >
                 Write a comment
-              </button>
-            )}
+            </button>
+          )}
         </div>
 
         {commentsState.isFormOpened && (
