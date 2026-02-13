@@ -21,10 +21,8 @@ export const UserSelector: React.FC<Props> = ({
   };
 
   const handleSelect = (
-    e: React.MouseEvent<HTMLAnchorElement, MouseEvent>,
     user: User,
   ) => {
-    e.preventDefault();
     setIsActive(false);
     onUserSelect(user);
   };
@@ -69,18 +67,19 @@ export const UserSelector: React.FC<Props> = ({
       <div className="dropdown-menu" id="dropdown-menu" role="menu">
         <div className="dropdown-content">
           {users.map((user: User) => {
-            return (
-              <a
-                key={user.id}
-                href={`#user-${user.id}`}
-                className={classNames('dropdown-item', {
-                  'is-active': selectedUser?.id === user.id,
-                })}
-                onClick={e => handleSelect(e, user)}
-              >
-                {user.name}
-              </a>
-            );
+              return (
+                <button
+                  type="button"
+                  key={user.id}
+                  className={classNames('dropdown-item', {
+                    'is-active': selectedUser?.id === user.id,
+                  })}
+                  onClick={() => handleSelect(user)}
+                  style={{ width: '100%', textAlign: 'left', background: 'none', border: 'none', padding: 0 }}
+                >
+                  {user.name}
+                </button>
+              );
           })}
         </div>
       </div>
