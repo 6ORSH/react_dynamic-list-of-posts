@@ -20,9 +20,7 @@ export const UserSelector: React.FC<Props> = ({
     setIsActive(!isActive);
   };
 
-  const handleSelect = (
-    user: User,
-  ) => {
+  const handleSelect = (user: User) => {
     setIsActive(false);
     onUserSelect(user);
   };
@@ -67,19 +65,25 @@ export const UserSelector: React.FC<Props> = ({
       <div className="dropdown-menu" id="dropdown-menu" role="menu">
         <div className="dropdown-content">
           {users.map((user: User) => {
-              return (
-                <button
-                  type="button"
-                  key={user.id}
-                  className={classNames('dropdown-item', {
-                    'is-active': selectedUser?.id === user.id,
-                  })}
-                  onClick={() => handleSelect(user)}
-                  style={{ width: '100%', textAlign: 'left', background: 'none', border: 'none', padding: 0 }}
-                >
-                  {user.name}
-                </button>
-              );
+            return (
+              <button
+                type="button"
+                key={user.id}
+                className={classNames('dropdown-item', {
+                  'is-active': selectedUser?.id === user.id,
+                })}
+                onClick={() => handleSelect(user)}
+                style={{
+                  width: '100%',
+                  textAlign: 'left',
+                  background: 'none',
+                  border: 'none',
+                  padding: 0,
+                }}
+              >
+                {user.name}
+              </button>
+            );
           })}
         </div>
       </div>
