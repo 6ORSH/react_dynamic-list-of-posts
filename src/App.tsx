@@ -6,19 +6,12 @@ import classNames from 'classnames';
 import { useCallback, useEffect, useState } from 'react';
 import { getUserPostsFromServer } from './api/postApi';
 import { getUsersFromServer } from './api/userApi';
-import { Loader } from './components/Loader';
+import { MainContent } from './components/MainContent';
 import { PostDetails } from './components/PostDetails';
-import { PostsList } from './components/PostsList';
 import { UserSelector } from './components/UserSelector';
+import { AppState } from './types/App';
 import { Post } from './types/Post';
 import { User } from './types/User';
-
-interface AppState {
-  selectedUser: User | null;
-  selectedPost: Post | null;
-  isLoadingPosts: boolean;
-  postsError: boolean;
-}
 
 export const App = () => {
   const [users, setUsers] = useState<User[]>([]);
@@ -92,34 +85,9 @@ export const App = () => {
               </div>
 
               <div className="block" data-cy="MainContent">
-                {ui.selectedUser ? (
-                  ui.isLoadingPosts ? (
-                    <Loader />
-                  ) : ui.postsError ? (
-                    <div
-                      className="notification is-danger"
-                      data-cy="PostsLoadingError"
-                    >
-                      Something went wrong!
-                    </div>
-                  ) : posts.length > 0 ? (
-                    <PostsList
-                      posts={posts}
-                      onPostSelect={post => updateUi({ selectedPost: post })}
-                      selectedPost={ui.selectedPost}
-                    />
-                  ) : (
-                    <div
-                      className="notification is-warning"
-                      data-cy="NoPostsYet"
-                    >
-                      No posts yet
-                    </div>
-                  )
-                ) : (
-                  <p data-cy="NoSelectedUser">No user selected</p>
-                )}
+                <MainContent ui={ui} posts={posts} updateUi={updateUi} />
               </div>
+              <></>
             </div>
           </div>
           <div

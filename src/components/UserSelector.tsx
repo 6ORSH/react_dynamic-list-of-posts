@@ -1,7 +1,6 @@
 import classNames from 'classnames';
-import PropTypes from 'prop-types';
 import React, { useRef, useState } from 'react';
-import { User, USER_PROP_TYPES } from '../types/User';
+import { User } from '../types/User';
 
 type Props = {
   users: User[];
@@ -86,15 +85,4 @@ export const UserSelector: React.FC<Props> = ({
       </div>
     </div>
   );
-};
-
-// Runtime propTypes for checklist compliance
-UserSelector.propTypes = {
-  users: PropTypes.arrayOf(PropTypes.shape(USER_PROP_TYPES).isRequired)
-    .isRequired,
-  onUserSelect: PropTypes.func.isRequired,
-  selectedUser: PropTypes.oneOfType([
-    PropTypes.shape(USER_PROP_TYPES),
-    PropTypes.oneOf([null]),
-  ]),
 };

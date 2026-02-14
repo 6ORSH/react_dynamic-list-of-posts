@@ -1,25 +1,16 @@
-import PropTypes from 'prop-types';
 import React, { useEffect, useState } from 'react';
 import {
   deleteCommentFromServer,
   getPostCommentsFromServer,
 } from '../api/commentApi';
-import { Comment } from '../types/Comment';
-import { Post, POST_PROP_TYPES } from '../types/Post';
+import { Comment, CommentsState } from '../types/Comment';
+import { Post } from '../types/Post';
 import { Loader } from './Loader';
 import { NewCommentForm } from './NewCommentForm';
 
 type Props = {
   post: Post;
 };
-
-interface CommentsState {
-  isLoading: boolean;
-  isCommentsLoadingError: boolean;
-  isCommentDeleteError: boolean;
-  comments: Comment[];
-  isFormOpened: boolean;
-}
 
 export const PostDetails: React.FC<Props> = ({ post }) => {
   const [commentsState, setCommentsState] = useState<CommentsState>({
@@ -218,9 +209,4 @@ export const PostDetails: React.FC<Props> = ({ post }) => {
       </div>
     </div>
   );
-};
-
-// Runtime propTypes for checklist compliance
-PostDetails.propTypes = {
-  post: PropTypes.shape(POST_PROP_TYPES).isRequired,
 };

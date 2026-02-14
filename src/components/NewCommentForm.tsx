@@ -1,3 +1,4 @@
+import classNames from 'classnames';
 import React, { useState } from 'react';
 import { Comment } from '../types/Comment';
 import { client } from '../utils/fetchClient';
@@ -99,7 +100,9 @@ export const NewCommentForm: React.FC<Props> = ({ postId, onAddComment }) => {
             name="name"
             id="comment-author-name"
             placeholder="Name Surname"
-            className={`input${errors.name && touched ? ' is-danger' : ''}`}
+            className={classNames('input', {
+              'is-danger': errors.name && touched,
+            })}
             value={form.name}
             onChange={handleChange}
             autoComplete="off"
@@ -133,7 +136,9 @@ export const NewCommentForm: React.FC<Props> = ({ postId, onAddComment }) => {
             name="email"
             id="comment-author-email"
             placeholder="email@test.com"
-            className={`input${errors.email && touched ? ' is-danger' : ''}`}
+            className={classNames('input', {
+              'is-danger': errors.email && touched,
+            })}
             value={form.email}
             onChange={handleChange}
             autoComplete="off"
@@ -166,7 +171,9 @@ export const NewCommentForm: React.FC<Props> = ({ postId, onAddComment }) => {
             id="comment-body"
             name="body"
             placeholder="Type comment here"
-            className={`textarea${errors.body && touched ? ' is-danger' : ''}`}
+            className={classNames('textarea', {
+              'is-danger': errors.body && touched,
+            })}
             value={form.body}
             onChange={handleChange}
           />
@@ -191,7 +198,9 @@ export const NewCommentForm: React.FC<Props> = ({ postId, onAddComment }) => {
         <div className="control">
           <button
             type="submit"
-            className={`button is-link${isLoading ? ' is-loading' : ''}`}
+            className={classNames('button is-link', {
+              'is-loading': isLoading,
+            })}
             disabled={isLoading}
           >
             Add

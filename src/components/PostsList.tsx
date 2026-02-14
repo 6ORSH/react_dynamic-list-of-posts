@@ -1,7 +1,6 @@
 import classNames from 'classnames';
-import PropTypes from 'prop-types';
 import React from 'react';
-import { Post, POST_PROP_TYPES } from '../types/Post';
+import { Post } from '../types/Post';
 
 type Props = {
   posts: Post[];
@@ -65,15 +64,4 @@ export const PostsList: React.FC<Props> = ({
       </table>
     </div>
   );
-};
-
-// Runtime propTypes for checklist compliance
-PostsList.propTypes = {
-  posts: PropTypes.arrayOf(PropTypes.shape(POST_PROP_TYPES).isRequired)
-    .isRequired,
-  onPostSelect: PropTypes.func.isRequired,
-  selectedPost: PropTypes.oneOfType([
-    PropTypes.shape(POST_PROP_TYPES),
-    PropTypes.oneOf([null]),
-  ]),
 };
